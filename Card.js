@@ -1,24 +1,12 @@
 // ============================================
-// WISHLIST SCREEN
+// AGENTS SCREEN - Human specialists listing
 // ============================================
 
 import React from "react";
-import Card from "../ui/Card";
 import Pill from "../ui/Pill";
-import { ITEMS } from "../../data/items";
+import { AGENTS } from "../../data/items";
 
-export default function WishlistScreen({
-  wished,
-  wishlistCount,
-  wishlistValue,
-  userPoints,
-  onToggleWish,
-  onOpenItem,
-  onGoToSearch,
-  onBack,
-}) {
-  const wItems = ITEMS.filter((i) => wished.has(i.id));
-
+export default function AgentsScreen({ onBack, onStartChat }) {
   return (
     <div style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
       {/* Header */}
@@ -44,148 +32,122 @@ export default function WishlistScreen({
         >
           ←
         </button>
-        <div
+        <h1
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            margin: 0,
+            fontSize: 17,
+            fontWeight: 800,
+            color: "#fff",
+            letterSpacing: -0.5,
           }}
         >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 17,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: -0.5,
-              }}
-            >
-              My Wishlist
-            </h1>
-            <p
-              style={{
-                margin: "3px 0 0",
-                fontSize: 10,
-                color: "rgba(255,255,255,.4)",
-              }}
-            >
-              {wishlistCount} saved · {userPoints} Wayvo Points
-            </p>
-          </div>
-          {wishlistCount > 0 && (
-            <Pill
-              text={`❤️ ${wishlistCount}`}
-              color="#FCA5A5"
-              bg="rgba(229,57,53,.2)"
-            />
-          )}
-        </div>
+          Talk to a Specialist
+        </h1>
+        <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(255,255,255,.4)" }}>
+          Real humans · Certified experts · Instant response
+        </p>
       </div>
 
       <div style={{ padding: "12px" }}>
-        {wishlistCount === 0 ? (
-          /* Empty state */
-          <div style={{ textAlign: "center", padding: "44px 20px" }}>
-            <p style={{ fontSize: 40, margin: "0 0 9px" }}>🤍</p>
-            <p
-              style={{
-                fontSize: 15,
-                fontWeight: 800,
-                color: "var(--color-text-primary)",
-                margin: "0 0 6px",
-              }}
-            >
-              Wishlist is empty
-            </p>
-            <p
-              style={{
-                fontSize: 12,
-                color: "var(--color-text-secondary)",
-                margin: "0 0 16px",
-              }}
-            >
-              Tap ❤️ on any experience to save it.
-            </p>
-            <button
-              onClick={onGoToSearch}
-              style={{
-                padding: "10px 20px",
-                background: "#00C896",
-                border: "none",
-                borderRadius: 10,
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              Explore →
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Stats */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 8,
-                marginBottom: 11,
-              }}
-            >
-              <div
-                style={{
-                  background: "var(--color-background-primary)",
-                  border: "0.5px solid var(--color-border-tertiary)",
-                  borderRadius: 10,
-                  padding: "10px",
-                  textAlign: "center",
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 17 }}>💰</p>
-                <p
+        {/* Online status */}
+        <div
+          style={{
+            background: "var(--color-background-info)",
+            borderRadius: 9,
+            padding: "9px 12px",
+            marginBottom: 12,
+            display: "flex",
+            gap: 7,
+            alignItems: "center",
+          }}
+        >
+          <span>🟢</span>
+          <p style={{ margin: 0, fontSize: 11, color: "var(--color-text-info)" }}>
+            3 specialists online · Avg first response: 45 seconds
+          </p>
+        </div>
+
+        {/* Agent cards */}
+        {AGENTS.map((agent) => (
+          <div
+            key={agent.id}
+            style={{
+              background: "var(--color-background-primary)",
+              border: "0.5px solid var(--color-border-tertiary)",
+              borderRadius: 14,
+              padding: "14px",
+              marginBottom: 10,
+            }}
+          >
+            {/* Agent header */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <div
                   style={{
-                    margin: "3px 0 1px",
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: "var(--color-text-primary)",
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: agent.col,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#fff",
                   }}
                 >
-                  ${Math.round(
-                    wItems.reduce((s, i) => s + i.price, 0) / wItems.length
-                  )}
-                </p>
-                <p
+                  {agent.img}
+                </div>
+                <div
                   style={{
-                    margin: 0,
-                    fontSize: 10,
-                    color: "var(--color-text-secondary)",
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: 11,
+                    height: 11,
+                    borderRadius: "50%",
+                    background: agent.status === "online" ? "#22C55E" : "#F59E0B",
+                    border: "2px solid var(--color-background-primary)",
                   }}
-                >
-                  avg price
-                </p>
+                />
               </div>
-              <div
-                style={{
-                  background: "var(--color-background-primary)",
-                  border: "0.5px solid var(--color-border-tertiary)",
-                  borderRadius: 10,
-                  padding: "10px",
-                  textAlign: "center",
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 17 }}>💰</p>
-                <p
+
+              <div style={{ flex: 1 }}>
+                <div
                   style={{
-                    margin: "3px 0 1px",
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: "var(--color-text-primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    marginBottom: 2,
                   }}
                 >
-                  ${wItems.reduce((s, i) => s + i.price, 0)}
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--color-text-primary)",
+                    }}
+                  >
+                    {agent.name}
+                  </p>
+                  <Pill
+                    text={
+                      agent.status === "online" ? "● Online" : "● Busy"
+                    }
+                    color={agent.status === "online" ? "#16A34A" : "#D97706"}
+                    small
+                  />
+                </div>
+                <p
+                  style={{
+                    margin: "0 0 2px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: agent.col,
+                  }}
+                >
+                  {agent.spec}
                 </p>
                 <p
                   style={{
@@ -194,43 +156,120 @@ export default function WishlistScreen({
                     color: "var(--color-text-secondary)",
                   }}
                 >
-                  total value
+                  {agent.lang.join(" · ")} · {agent.exp} · ⭐{agent.rating} ·{" "}
+                  {agent.handled.toLocaleString()} trips
                 </p>
               </div>
             </div>
 
-            {/* Items */}
-            {wItems.map((it) => (
-              <Card
-                key={it.id}
-                item={it}
-                wished
-                onWish={() => onToggleWish(it.id)}
-                onOpen={onOpenItem}
-                compact
-              />
-            ))}
-
-            <button
-              onClick={onGoToSearch}
+            {/* Bio */}
+            <p
               style={{
-                width: "100%",
-                padding: "10px",
-                background: "var(--color-background-primary)",
-                border: "1px solid #00C896",
-                borderRadius: 10,
-                color: "#00C896",
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer",
-                marginTop: 4,
-                transition: "all 0.2s ease",
+                margin: "0 0 10px",
+                fontSize: 11,
+                color: "var(--color-text-secondary)",
+                lineHeight: 1.5,
+                fontStyle: "italic",
               }}
             >
-              + Explore more
-            </button>
-          </>
-        )}
+              "{agent.bio}"
+            </p>
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                onClick={() => onStartChat("agent", agent)}
+                disabled={agent.status !== "online"}
+                style={{
+                  flex: 2,
+                  padding: "10px",
+                  borderRadius: 9,
+                  background: agent.status === "online" ? agent.col : "var(--color-background-secondary)",
+                  border: "none",
+                  color: agent.status === "online" ? "#fff" : "var(--color-text-tertiary)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: agent.status === "online" ? "pointer" : "not-allowed",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                💬{" "}
+                {agent.status === "online"
+                  ? `Chat · ${agent.response}`
+                  : "Currently busy"}
+              </button>
+
+              {agent.status === "online" && (
+                <button
+                  onClick={() =>
+                    window.open("https://wa.me/212600000000", "_blank")
+                  }
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 9,
+                    background: "#25D366",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  WhatsApp
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Video consultation */}
+        <div
+          style={{
+            background: "var(--color-background-secondary)",
+            borderRadius: 12,
+            padding: "13px",
+            marginTop: 4,
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 4px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--color-text-primary)",
+            }}
+          >
+            🎥 Video consultation
+          </p>
+          <p
+            style={{
+              margin: "0 0 9px",
+              fontSize: 11,
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            Book a 30-minute video call with a senior specialist for complex
+            multi-city trips.
+          </p>
+          <button
+            onClick={() => alert("Video call booking opening...")}
+            style={{
+              padding: "9px 16px",
+              background: "#1D4ED8",
+              border: "none",
+              borderRadius: 9,
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            Book video call — $29 →
+          </button>
+        </div>
       </div>
     </div>
   );

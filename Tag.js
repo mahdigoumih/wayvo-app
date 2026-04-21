@@ -1,12 +1,16 @@
 // ============================================
-// AGENTS SCREEN - Human specialists listing
+// PACKAGES SCREEN - Multi-day tour packages
 // ============================================
 
 import React from "react";
 import Pill from "../ui/Pill";
-import { AGENTS } from "../../data/items";
+import { PACKAGES } from "../../data/items";
 
-export default function AgentsScreen({ onBack, onStartChat }) {
+export default function PackagesScreen({
+  onBack,
+  onStartChat,
+  onGoToAgents,
+}) {
   return (
     <div style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
       {/* Header */}
@@ -41,196 +45,177 @@ export default function AgentsScreen({ onBack, onStartChat }) {
             letterSpacing: -0.5,
           }}
         >
-          Talk to a Specialist
+          Multi-Day Packages
         </h1>
-        <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(255,255,255,.4)" }}>
-          Real humans · Certified experts · Instant response
+        <p
+          style={{
+            margin: "3px 0 0",
+            fontSize: 10,
+            color: "rgba(255,255,255,.4)",
+          }}
+        >
+          All-inclusive · Expert guides · Best value
         </p>
       </div>
 
       <div style={{ padding: "12px" }}>
-        {/* Online status */}
-        <div
-          style={{
-            background: "var(--color-background-info)",
-            borderRadius: 9,
-            padding: "9px 12px",
-            marginBottom: 12,
-            display: "flex",
-            gap: 7,
-            alignItems: "center",
-          }}
-        >
-          <span>🟢</span>
-          <p style={{ margin: 0, fontSize: 11, color: "var(--color-text-info)" }}>
-            3 specialists online · Avg first response: 45 seconds
-          </p>
-        </div>
-
-        {/* Agent cards */}
-        {AGENTS.map((agent) => (
+        {PACKAGES.map((pkg) => (
           <div
-            key={agent.id}
+            key={pkg.days}
             style={{
               background: "var(--color-background-primary)",
               border: "0.5px solid var(--color-border-tertiary)",
               borderRadius: 14,
-              padding: "14px",
-              marginBottom: 10,
+              overflow: "hidden",
+              marginBottom: 11,
             }}
           >
-            {/* Agent header */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    background: agent.col,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#fff",
-                  }}
-                >
-                  {agent.img}
+            {/* Package Header */}
+            <div
+              style={{
+                background: "var(--gradient-primary)",
+                padding: "14px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 5,
+                      marginBottom: 5,
+                    }}
+                  >
+                    <Pill text={`${pkg.days} days`} color="#00C896" />
+                    <Pill
+                      text={`Save $${pkg.saving}`}
+                      color="#fff"
+                      bg="#E53935"
+                    />
+                  </div>
+                  <p
+                    style={{
+                      margin: "0 0 2px",
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: "#fff",
+                    }}
+                  >
+                    {pkg.em} {pkg.title}
+                  </p>
+                  <p
+                    style={{
+                      margin: "0 0 8px",
+                      fontSize: 10,
+                      color: "rgba(255,255,255,.5)",
+                    }}
+                  >
+                    📍 {pkg.cities}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 4,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {pkg.tags.map((t) => (
+                      <span
+                        key={t}
+                        style={{
+                          fontSize: 9,
+                          padding: "2px 7px",
+                          borderRadius: 100,
+                          background: "rgba(255,255,255,.12)",
+                          color: "rgba(255,255,255,.8)",
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    width: 11,
-                    height: 11,
-                    borderRadius: "50%",
-                    background: agent.status === "online" ? "#22C55E" : "#F59E0B",
-                    border: "2px solid var(--color-background-primary)",
-                  }}
-                />
-              </div>
-
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                    marginBottom: 2,
-                  }}
-                >
+                <div style={{ textAlign: "right" }}>
                   <p
                     style={{
                       margin: 0,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "var(--color-text-primary)",
+                      fontSize: 22,
+                      fontWeight: 900,
+                      color: "#00C896",
                     }}
                   >
-                    {agent.name}
+                    ${pkg.price}
                   </p>
-                  <Pill
-                    text={
-                      agent.status === "online" ? "● Online" : "● Busy"
-                    }
-                    color={agent.status === "online" ? "#16A34A" : "#D97706"}
-                    small
-                  />
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 9,
+                      color: "rgba(255,255,255,.4)",
+                    }}
+                  >
+                    / person
+                  </p>
                 </div>
-                <p
-                  style={{
-                    margin: "0 0 2px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: agent.col,
-                  }}
-                >
-                  {agent.spec}
-                </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 10,
-                    color: "var(--color-text-secondary)",
-                  }}
-                >
-                  {agent.lang.join(" · ")} · {agent.exp} · ⭐{agent.rating} ·{" "}
-                  {agent.handled.toLocaleString()} trips
-                </p>
               </div>
             </div>
 
-            {/* Bio */}
-            <p
+            {/* Actions */}
+            <div
               style={{
-                margin: "0 0 10px",
-                fontSize: 11,
-                color: "var(--color-text-secondary)",
-                lineHeight: 1.5,
-                fontStyle: "italic",
+                padding: "11px 13px",
+                display: "flex",
+                gap: 7,
               }}
             >
-              "{agent.bio}"
-            </p>
-
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 6 }}>
               <button
-                onClick={() => onStartChat("agent", agent)}
-                disabled={agent.status !== "online"}
+                onClick={onGoToAgents}
                 style={{
                   flex: 2,
                   padding: "10px",
-                  borderRadius: 9,
-                  background: agent.status === "online" ? agent.col : "var(--color-background-secondary)",
+                  background: "#00C896",
                   border: "none",
-                  color: agent.status === "online" ? "#fff" : "var(--color-text-tertiary)",
+                  borderRadius: 9,
+                  color: "#fff",
                   fontSize: 12,
-                  fontWeight: 600,
-                  cursor: agent.status === "online" ? "pointer" : "not-allowed",
+                  fontWeight: 700,
+                  cursor: "pointer",
                   transition: "all 0.2s ease",
                 }}
               >
-                💬{" "}
-                {agent.status === "online"
-                  ? `Chat · ${agent.response}`
-                  : "Currently busy"}
+                Book with specialist →
               </button>
-
-              {agent.status === "online" && (
-                <button
-                  onClick={() =>
-                    window.open("https://wa.me/212600000000", "_blank")
-                  }
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: 9,
-                    background: "#25D366",
-                    border: "none",
-                    color: "#fff",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  WhatsApp
-                </button>
-              )}
+              <button
+                onClick={() => onStartChat("ai")}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  background: "var(--color-background-secondary)",
+                  border: "0.5px solid var(--color-border-secondary)",
+                  borderRadius: 9,
+                  color: "var(--color-text-secondary)",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Ask AI
+              </button>
             </div>
           </div>
         ))}
 
-        {/* Video consultation */}
+        {/* Custom trip CTA */}
         <div
           style={{
             background: "var(--color-background-secondary)",
             borderRadius: 12,
             padding: "13px",
-            marginTop: 4,
           }}
         >
           <p
@@ -241,7 +226,7 @@ export default function AgentsScreen({ onBack, onStartChat }) {
               color: "var(--color-text-primary)",
             }}
           >
-            🎥 Video consultation
+            ✏️ Need something custom?
           </p>
           <p
             style={{
@@ -250,14 +235,14 @@ export default function AgentsScreen({ onBack, onStartChat }) {
               color: "var(--color-text-secondary)",
             }}
           >
-            Book a 30-minute video call with a senior specialist for complex
-            multi-city trips.
+            Our specialists build fully bespoke trips for any duration, group,
+            or budget.
           </p>
           <button
-            onClick={() => alert("Video call booking opening...")}
+            onClick={onGoToAgents}
             style={{
               padding: "9px 16px",
-              background: "#1D4ED8",
+              background: "#0D1B2A",
               border: "none",
               borderRadius: 9,
               color: "#fff",
@@ -267,7 +252,7 @@ export default function AgentsScreen({ onBack, onStartChat }) {
               transition: "all 0.2s ease",
             }}
           >
-            Book video call — $29 →
+            Talk to a specialist →
           </button>
         </div>
       </div>

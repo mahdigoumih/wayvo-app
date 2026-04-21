@@ -1,23 +1,16 @@
 // ============================================
-// TAG COMPONENT
+// WAYVO APP ENTRY POINT
 // ============================================
 
 import React from "react";
+import ReactDOM from "react-dom/client";
+import "./styles/variables.css";
+import "./styles/animations.css";
+import App from "./App";
 
-export default function Tag({ text }) {
-  return (
-    <span
-      style={{
-        fontSize: 10,
-        padding: "3px 7px",
-        borderRadius: 7,
-        background: "var(--color-background-secondary)",
-        color: "var(--color-text-secondary)",
-        border: "0.5px solid var(--color-border-tertiary)",
-        display: "inline-block",
-      }}
-    >
-      {text}
-    </span>
-  );
-}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

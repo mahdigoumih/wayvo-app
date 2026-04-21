@@ -1,77 +1,64 @@
 // ============================================
-// SPLASH SCREEN
-// Animated app launch screen
+// HEART / WISHLIST BUTTON
 // ============================================
 
-import React, { useEffect, useState } from "react";
-import Logo from "./ui/Logo";
+import React from "react";
 
-export default function SplashScreen({ onComplete }) {
-  const [stage, setStage] = useState(0);
-
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setStage(1), 400),
-      setTimeout(() => setStage(2), 1200),
-      setTimeout(() => onComplete(), 2800),
-    ];
-
-    return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
-
+export default function HeartButton({
+  filled,
+  onToggle,
+  overlay = false,
+  size = 13,
+}) {
   return (
-    <div
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      aria-label={filled ? "Remove from wishlist" : "Add to wishlist"}
       style={{
-        minHeight: "100vh",
+        background: overlay
+          ? "rgba(0,0,0,.35)"
+          : filled
+          ? "#FEE2E2"
+          : "var(--color-background-secondary)",
+        border: overlay
+          ? "none"
+          : filled
+          ? "1px solid #FECACA"
+          : "0.5px solid var(--color-border-tertiary)",
+        borderRadius: "50%",
+        width: 30,
+        height: 30,
+        cursor: "pointer",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--color-background-tertiary)",
-        fontFamily: "var(--font-sans)",
+        flexShrink: 0,
+        padding: 0,
+        transition: "all 0.2s ease",
       }}
     >
-      <div
-        style={{
-          animation: stage >= 1 ? "logoScale 0.6s ease forwards" : "none",
-          opacity: stage >= 1 ? 1 : 0,
-          transform: stage >= 1 ? "scale(1)" : "scale(0.5)",
-          transition: "all 0.6s ease",
-        }}
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill={filled ? "#E53935" : "none"}
+        stroke={
+          filled
+            ? "#E53935"
+            : overlay
+            ? "rgba(255,255,255,.9)"
+            : "var(--color-text-tertiary)"
+        }
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
       >
-        <Logo size={60} />
-      </div>
-
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: 16,
-          opacity: stage >= 2 ? 1 : 0,
-          transform: stage >= 2 ? "translateY(0)" : "translateY(10px)",
-          transition: "all 0.5s ease",
-        }}
-      >
-        <p
-          style={{
-            fontSize: 22,
-            fontWeight: 900,
-            letterSpacing: -1,
-            color: "#fff",
-            margin: "0 0 4px",
-          }}
-        >
-          Way<span style={{ color: "#00C896" }}>vo</span>
-        </p>
-        <p
-          style={{
-            fontSize: 11,
-            color: "rgba(255,255,255,.4)",
-            margin: 0,
-          }}
-        >
-          Morocco's premium AI travel companion
-        </p>
-      </div>
-    </div>
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    </button>
   );
 }

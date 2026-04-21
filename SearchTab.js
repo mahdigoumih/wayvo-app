@@ -1,46 +1,95 @@
 // ============================================
-// TOAST NOTIFICATION COMPONENT
+// SEARCH BAR COMPONENT
+// Accessible, debounced-ready search input
 // ============================================
 
-import React, { useEffect } from "react";
+import React from "react";
 
-export default function Toast({ message, onClose, duration = 2200 }) {
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => {
-      onClose?.();
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [message, duration, onClose]);
-
-  if (!message) return null;
-
+export default function SearchBar({
+  query,
+  onChange,
+  inPage = false,
+  onFocus,
+  placeholder = "Search hotels, tours, food, transport…",
+}) {
   return (
     <div
+      role="search"
       style={{
-        position: "fixed",
-        bottom: 76,
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "#0D1B2A",
-        color: "#fff",
-        padding: "9px 17px",
-        borderRadius: 12,
-        fontSize: 12,
-        fontWeight: 600,
-        zIndex: 9999,
-        whiteSpace: "nowrap",
-        pointerEvents: "none",
-        animation: "toastSlideUp 0.3s ease",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-        maxWidth: "90vw",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: inPage
+          ? "var(--color-background-secondary)"
+          : "rgba(255,255,255,0.13)",
+        border: inPage
+          ? "1px solid var(--color-border-secondary)"
+          : "1px solid rgba(255,255,255,0.2)",
+        borderRadius: 13,
+        padding: "0 13px",
+        height: 44,
+        transition: "all 0.2s ease",
       }}
-      role="status"
-      aria-live="polite"
     >
-      {message}
+      <svg
+        width={14}
+        height={14}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={
+          inPage ? "var(--color-text-tertiary)" : "rgba(255,255,255,0.6)"
+        }
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        placeholder={placeholder}
+        aria-label="Search experiences"
+        style={{
+          flex: 1,
+          background: "none",
+          border: "none",
+          outline: "none",
+          fontSize: 13,
+          color: inPage ? "var(--color-text-primary)" : "#fff",
+          fontFamily: "var(--font-sans)",
+          WebkitAppearance: "none",
+        }}
+      />
+
+      {query && (
+        <button
+          onClick={() => onChange("")}
+          aria-label="Clear search"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: inPage
+              ? "var(--color-text-tertiary)"
+              : "rgba(255,255,255,.6)",
+            fontSize: 17,
+            lineHeight: 1,
+            padding: 0,
+            width: 24,
+            height: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }
