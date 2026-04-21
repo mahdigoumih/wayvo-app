@@ -1,35 +1,28 @@
 // ============================================
-// STATUS BADGE COMPONENT
+// WAYVO LOGO COMPONENT
 // ============================================
 
 import React from "react";
 
-const STATUS_MAP = {
-  confirmed: { bg: "#DCFCE7", color: "#166534", label: "Confirmed" },
-  pending: { bg: "#FEF3C7", color: "#92400E", label: "Pending" },
-  completed: { bg: "#E0E7FF", color: "#3730A3", label: "Completed" },
-  active: { bg: "#DCFCE7", color: "#166534", label: "Active" },
-  paid: { bg: "#DCFCE7", color: "#166534", label: "Paid" },
-  upcoming: { bg: "#E0E7FF", color: "#3730A3", label: "Upcoming" },
-};
-
-export default function StatusBadge({ status }) {
-  const config = STATUS_MAP[status] || STATUS_MAP.completed;
-
+export default function Logo({ size = 30, light = false }) {
   return (
-    <span
-      style={{
-        fontSize: 10,
-        fontWeight: 700,
-        padding: "2px 8px",
-        borderRadius: 100,
-        background: config.bg,
-        color: config.color,
-        display: "inline-block",
-        whiteSpace: "nowrap",
-      }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      aria-label="Wayvo logo"
+      role="img"
     >
-      {config.label}
-    </span>
+      <rect width="40" height="40" rx="11" fill="#00C896" />
+      <path
+        d="M8 15L14 26L20 17L26 26L32 15"
+        stroke="#fff"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <circle cx="32" cy="15" r="3" fill="#fff" />
+    </svg>
   );
 }

@@ -1,402 +1,429 @@
 // ============================================
-// SEARCH TAB COMPONENT
-// With debounced search and filtering
+// PROFILE TAB - User profile & settings
 // ============================================
 
-import React, { useState, useMemo } from "react";
-import SearchBar from "../ui/SearchBar";
-import Card from "../ui/Card";
-import Pill from "../ui/Pill";
-import { ITEMS, CATEGORIES, CITIES, TRENDING_SEARCHES, SORT_OPTIONS } from "../../data/items";
-import { useDebounce } from "../../hooks/useDebounce";
+import React from "react";
+import { CITIES, INTERESTS } from "../../data/items";
+import { getInitials } from "../../utils/helpers";
 
-export default function SearchTab({
+export default function ProfileTab({
+  user,
   wished,
-  onToggleWish,
-  onOpenItem,
+  wishlistCount,
+  wishlistValue,
+  onGoToWishlist,
+  onRestartOnboarding,
+  onGoToPartner,
+  onShowToast,
 }) {
-  const [query, setQuery] = useState("");
-  const [fCat, setFCat] = useState("all");
-  const [fCity, setFCity] = useState("All cities");
-  const [fPrice, setFPrice] = useState(600);
-  const [fSort, setFSort] = useState("Recommended");
-  const [showFilters, setShowFilters] = useState(false);
-
-  // Debounce search query for performance
-  const debouncedQuery = useDebounce(query, 200);
-
-  // Filter and sort items
-  const filtered = useMemo(() => {
-    const sq = debouncedQuery.toLowerCase();
-    let results = ITEMS.filter((it) => {
-      const matchesSearch =
-        !sq ||
-        [it.title, it.loc, it.city, ...it.tags].some((x) =>
-          x.toLowerCase().includes(sq)
-        );
-      const matchesCategory = fCat === "all" || it.cat === fCat;
-      const matchesCity = fCity === "All cities" || it.city === fCity;
-      const matchesPrice = it.price <= fPrice;
-      return matchesSearch && matchesCategory && matchesCity && matchesPrice;
-    });
-
-    // Sort
-    switch (fSort) {
-      case "Price: low to high":
-        results.sort((a, b) => a.price - b.price);
-        break;
-      case "Price: high to low":
-        results.sort((a, b) => b.price - a.price);
-        break;
-      case "Highest rated":
-        results.sort((a, b) => b.rating - a.rating);
-        break;
-      case "Most popular":
-        results.sort((a, b) => b.reviews - a.reviews);
-        break;
-      default:
-        break;
-    }
-
-    return results;
-  }, [debouncedQuery, fCat, fCity, fPrice, fSort]);
-
-  const clearAll = () => {
-    setQuery("");
-    setFCat("all");
-    setFCity("All cities");
-    setFPrice(600);
-  };
-
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      {/* Search Header */}
+    <div style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
+      {/* Profile Header */}
       <div
         style={{
-          background: "var(--color-background-primary)",
-          borderBottom: "0.5px solid var(--color-border-tertiary)",
-          padding: "10px 13px",
-          flexShrink: 0,
+          background: "var(--gradient-primary)",
+          padding: "22px 14px 26px",
+          textAlign: "center",
         }}
       >
-        <div style={{ marginBottom: 9 }}>
-          <SearchBar
-            query={query}
-            onChange={setQuery}
-            inPage
-            placeholder="Search hotels, tours, food, transport…"
-          />
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: "#00C896",
+            margin: "0 auto 10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 22,
+            fontWeight: 800,
+            color: "#fff",
+          }}
+        >
+          {getInitials(user.name)}
         </div>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 17,
+            fontWeight: 800,
+            color: "#fff",
+          }}
+        >
+          {user.name || "Wayvo Traveller"}
+        </p>
+        <p
+          style={{
+            margin: "3px 0 7px",
+            fontSize: 11,
+            color: "rgba(255,255,255,.4)",
+          }}
+        >
+          {user.nat || "Set your nationality"} · {user.city}
+        </p>
 
-        {/* Category Filter Pills */}
+        {user.points > 0 && (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              background: "rgba(245,163,35,.2)",
+              border: "1px solid rgba(245,163,35,.3)",
+              borderRadius: 100,
+              padding: "5px 13px",
+              marginBottom: 7,
+            }}
+          >
+            <span style={{ fontSize: 13 }}>🌟</span>
+            <span
+              style={{ fontSize: 12, color: "#F5A623", fontWeight: 700 }}
+            >
+              {user.points} Wayvo Points
+            </span>
+          </div>
+        )}
+
         <div
           style={{
             display: "flex",
             gap: 5,
-            overflowX: "auto",
-            scrollbarWidth: "none",
-            paddingBottom: 2,
-            marginBottom: 6,
+            justifyContent: "center",
+            flexWrap: "wrap",
           }}
         >
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setFCat(c.id)}
+          {user.interests.map((id) => {
+            const it = INTERESTS.find((x) => x.id === id);
+            return it ? (
+              <span
+                key={id}
+                style={{
+                  fontSize: 10,
+                  padding: "3px 9px",
+                  borderRadius: 100,
+                  background: "rgba(255,255,255,.1)",
+                  color: "rgba(255,255,255,.7)",
+                }}
+              >
+                {it.icon} {it.label}
+              </span>
+            ) : null;
+          })}
+        </div>
+      </div>
+
+      <div style={{ padding: "13px" }}>
+        {/* Morocco Passport */}
+        <div
+          style={{
+            background: "var(--gradient-gold)",
+            border: "1px solid #F5A62330",
+            borderRadius: 12,
+            padding: "13px",
+            marginBottom: 12,
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 4px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: "var(--color-text-primary)",
+            }}
+          >
+            🛂 Morocco Passport
+          </p>
+          <p
+            style={{
+              margin: "0 0 9px",
+              fontSize: 11,
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            Collect a digital stamp for every city you visit through Wayvo.
+            Share on Instagram.
+          </p>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {CITIES.slice(0, 6).map((c, i) => (
+              <span
+                key={c}
+                style={{
+                  fontSize: 10,
+                  padding: "4px 9px",
+                  borderRadius: 8,
+                  background: i === 0 ? "#F5A62320" : "var(--color-background-secondary)",
+                  color: i === 0 ? "#F5A623" : "var(--color-text-tertiary)",
+                  border:
+                    i === 0 ? "1px solid #F5A62330" : "0.5px solid var(--color-border-tertiary)",
+                  fontWeight: i === 0 ? 700 : 400,
+                }}
+              >
+                {i === 0 ? "✅ " : ""}
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Wishlist Shortcut */}
+        <button
+          onClick={onGoToWishlist}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "#FEF2F2",
+            border: "1px solid #FECACA",
+            borderRadius: 12,
+            padding: "12px 13px",
+            cursor: "pointer",
+            marginBottom: 10,
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <span style={{ fontSize: 22 }}>❤️</span>
+          <div style={{ flex: 1 }}>
+            <p
               style={{
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "5px 11px",
-                borderRadius: 18,
-                fontSize: 11,
-                fontWeight: fCat === c.id ? 700 : 400,
-                border:
-                  fCat === c.id
-                    ? "1.5px solid #0D1B2A"
-                    : "0.5px solid var(--color-border-secondary)",
-                background: fCat === c.id ? "#0D1B2A" : "var(--color-background-primary)",
-                color: fCat === c.id ? "#fff" : "var(--color-text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
+                margin: 0,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#B91C1C",
               }}
             >
-              <span style={{ fontSize: 13 }}>{c.icon}</span>
-              {c.label}
-            </button>
-          ))}
+              My Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ""}
+            </p>
+            <p style={{ margin: 0, fontSize: 10, color: "#E53935" }}>
+              {wishlistCount > 0
+                ? `${wishlistCount} saved · $${wishlistValue} total value`
+                : "Tap ❤️ on any card to save"}
+            </p>
+          </div>
+          <span style={{ color: "#E53935", fontSize: 14 }}>›</span>
+        </button>
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
+        {/* Update Preferences */}
+        <button
+          onClick={onRestartOnboarding}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "var(--color-background-primary)",
+            border: "1px solid #00C896",
+            borderRadius: 12,
+            padding: "12px 13px",
+            cursor: "pointer",
+            marginBottom: 10,
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <span style={{ fontSize: 20 }}>✏️</span>
+          <span
             style={{
-              flexShrink: 0,
-              padding: "5px 11px",
-              borderRadius: 18,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
-              border: showFilters
-                ? "1.5px solid #00C896"
-                : "0.5px solid var(--color-border-secondary)",
-              background: showFilters
-                ? "#00C89615"
-                : "var(--color-background-primary)",
-              color: showFilters ? "#009E78" : "var(--color-text-secondary)",
+              color: "#009E78",
+              flex: 1,
+            }}
+          >
+            Update my travel preferences
+          </span>
+          <span style={{ color: "#00C896", fontSize: 14 }}>›</span>
+        </button>
+
+        {/* Menu Items */}
+        {[
+          {
+            icon: "🌍",
+            title: "My Trips",
+            desc: "0 upcoming · 0 completed",
+          },
+          {
+            icon: "⭐",
+            title: "My Reviews",
+            desc: "Rate your experiences",
+          },
+          {
+            icon: "💳",
+            title: "Payment Methods",
+            desc: "Add card for instant booking",
+          },
+          {
+            icon: "🛡️",
+            title: "Travel Insurance",
+            desc: "Covered from $3/day",
+          },
+          {
+            icon: "🔔",
+            title: "Notifications",
+            desc: "Deals, price drops, trip reminders",
+          },
+        ].map((item) => (
+          <div
+            key={item.title}
+            onClick={() => onShowToast("Coming soon!")}
+            role="button"
+            tabIndex={0}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px",
+              background: "var(--color-background-primary)",
+              border: "0.5px solid var(--color-border-tertiary)",
+              borderRadius: 11,
+              marginBottom: 7,
               cursor: "pointer",
               transition: "all 0.2s ease",
             }}
           >
-            ⚙️ Filters
-          </button>
-        </div>
-
-        {/* Expanded Filters */}
-        {showFilters && (
-          <div
-            style={{
-              borderTop: "0.5px solid var(--color-border-tertiary)",
-              paddingTop: 10,
-            }}
-          >
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-              <select
-                value={fCity}
-                onChange={(e) => setFCity(e.target.value)}
-                aria-label="Filter by city"
+            <span style={{ fontSize: 20, width: 32, textAlign: "center" }}>
+              {item.icon}
+            </span>
+            <div style={{ flex: 1 }}>
+              <p
                 style={{
-                  flex: 1,
-                  padding: "7px 9px",
-                  borderRadius: 7,
-                  border: "0.5px solid var(--color-border-secondary)",
-                  background: "var(--color-background-secondary)",
-                  fontSize: 11,
+                  margin: 0,
+                  fontSize: 12,
+                  fontWeight: 500,
                   color: "var(--color-text-primary)",
-                  outline: "none",
-                  fontFamily: "var(--font-sans)",
                 }}
               >
-                {["All cities", ...CITIES].map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={fSort}
-                onChange={(e) => setFSort(e.target.value)}
-                aria-label="Sort results"
+                {item.title}
+              </p>
+              <p
                 style={{
-                  flex: 1,
-                  padding: "7px 9px",
-                  borderRadius: 7,
-                  border: "0.5px solid var(--color-border-secondary)",
-                  background: "var(--color-background-secondary)",
-                  fontSize: 11,
-                  color: "var(--color-text-primary)",
-                  outline: "none",
-                  fontFamily: "var(--font-sans)",
+                  margin: 0,
+                  fontSize: 10,
+                  color: "var(--color-text-secondary)",
                 }}
               >
-                {SORT_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                {item.desc}
+              </p>
             </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 4,
-              }}
-            >
-              <span
-                style={{ fontSize: 10, color: "var(--color-text-secondary)" }}
-              >
-                Max price / person
-              </span>
-              <span
-                style={{ fontSize: 10, fontWeight: 700, color: "#0D1B2A" }}
-              >
-                ${fPrice}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={30}
-              max={600}
-              step={10}
-              value={fPrice}
-              onChange={(e) => setFPrice(Number(e.target.value))}
-              aria-label="Maximum price filter"
-              style={{ width: "100%", cursor: "pointer" }}
-            />
+            <span style={{ color: "var(--color-text-tertiary)", fontSize: 14 }}>
+              ›
+            </span>
           </div>
-        )}
-      </div>
+        ))}
 
-      {/* Results */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "12px 13px 80px",
-        }}
-      >
-        {/* Trending (only when no query) */}
-        {!query && (
-          <div style={{ marginBottom: 14 }}>
-            <h2
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: "var(--color-text-secondary)",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
-              🔥 Trending in Morocco
-            </h2>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 6,
-              }}
-            >
-              {TRENDING_SEARCHES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setQuery(t)}
-                  style={{
-                    padding: "6px 11px",
-                    borderRadius: 18,
-                    background: "var(--color-background-primary)",
-                    border: "0.5px solid var(--color-border-secondary)",
-                    fontSize: 11,
-                    color: "var(--color-text-primary)",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  🔍 {t}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Results count */}
-        {query && (
+        {/* Partner Portal */}
+        <button
+          onClick={onGoToPartner}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "var(--gradient-primary)",
+            border: "none",
+            borderRadius: 12,
+            padding: "13px",
+            cursor: "pointer",
+            marginTop: 4,
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
           <div
             style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "rgba(255,255,255,.12)",
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 10,
+              justifyContent: "center",
+              fontSize: 18,
+              flexShrink: 0,
             }}
           >
+            🏢
+          </div>
+          <div style={{ flex: 1 }}>
             <p
               style={{
                 margin: 0,
-                fontSize: 13,
-                fontWeight: 700,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {filtered.length} results for "
-              <span style={{ color: "#00C896" }}>{query}</span>"
-            </p>
-            <button
-              onClick={clearAll}
-              style={{
-                fontSize: 10,
-                color: "#E53935",
-                fontWeight: 600,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Clear
-            </button>
-          </div>
-        )}
-
-        {!query && (
-          <p
-            style={{
-              margin: "0 0 10px",
-              fontSize: 12,
-              color: "var(--color-text-secondary)",
-            }}
-          >
-            {filtered.length} experiences available
-          </p>
-        )}
-
-        {/* Empty state */}
-        {filtered.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "36px 20px",
-            }}
-          >
-            <p style={{ fontSize: 36, margin: "0 0 9px" }}>🔍</p>
-            <p
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--color-text-primary)",
-                margin: "0 0 5px",
-              }}
-            >
-              No results
-            </p>
-            <p
-              style={{
-                fontSize: 11,
-                color: "var(--color-text-secondary)",
-                margin: "0 0 14px",
-              }}
-            >
-              Try adjusting your filters
-            </p>
-            <button
-              onClick={clearAll}
-              style={{
-                padding: "9px 18px",
-                borderRadius: 9,
-                background: "#00C896",
-                border: "none",
-                color: "#fff",
                 fontSize: 12,
                 fontWeight: 700,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
+                color: "#fff",
               }}
             >
-              Reset all
-            </button>
+              Partner Portal
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 10,
+                color: "rgba(255,255,255,.5)",
+              }}
+            >
+              Hotels · Guides · Tours · Transport
+            </p>
           </div>
-        ) : (
-          /* Results list */
-          filtered.map((it) => (
-            <Card
-              key={it.id}
-              item={it}
-              wished={wished.has(it.id)}
-              onWish={onToggleWish}
-              onOpen={onOpenItem}
-              compact
-            />
-          ))
-        )}
+          <span style={{ color: "#00C896", fontSize: 14 }}>›</span>
+        </button>
+
+        {/* Global Expansion */}
+        <div
+          style={{
+            background: "var(--gradient-primary)",
+            borderRadius: 12,
+            padding: "13px",
+            marginTop: 10,
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 4px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#fff",
+            }}
+          >
+            🌍 Wayvo is going global
+          </p>
+          <p
+            style={{
+              margin: "0 0 8px",
+              fontSize: 10,
+              color: "rgba(255,255,255,.4)",
+            }}
+          >
+            Morocco first · North Africa next · The world by 2030
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: 5,
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {["🇲🇦 Active", "🌍 Africa 2027", "🌎 World 2028+"].map((t) => (
+              <span
+                key={t}
+                style={{
+                  fontSize: 10,
+                  padding: "3px 9px",
+                  borderRadius: 100,
+                  background: "#00C89628",
+                  color: "#00C896",
+                  fontWeight: 600,
+                }}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

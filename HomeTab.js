@@ -1,36 +1,77 @@
 // ============================================
-// PILL / BADGE COMPONENT
+// SPLASH SCREEN
+// Animated app launch screen
 // ============================================
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Logo from "./ui/Logo";
 
-export default function Pill({
-  text,
-  color = "#00C896",
-  background,
-  small = false,
-  icon,
-}) {
-  const bg = background || color + "18";
+export default function SplashScreen({ onComplete }) {
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setStage(1), 400),
+      setTimeout(() => setStage(2), 1200),
+      setTimeout(() => onComplete(), 2800),
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, [onComplete]);
 
   return (
-    <span
+    <div
       style={{
-        fontSize: small ? 9 : 10,
-        fontWeight: 700,
-        padding: small ? "2px 6px" : "3px 9px",
-        borderRadius: 100,
-        background: bg,
-        color,
-        letterSpacing: 0.3,
-        display: "inline-flex",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
         alignItems: "center",
-        gap: 3,
-        whiteSpace: "nowrap",
+        justifyContent: "center",
+        background: "var(--color-background-tertiary)",
+        fontFamily: "var(--font-sans)",
       }}
     >
-      {icon && <span>{icon}</span>}
-      {text}
-    </span>
+      <div
+        style={{
+          animation: stage >= 1 ? "logoScale 0.6s ease forwards" : "none",
+          opacity: stage >= 1 ? 1 : 0,
+          transform: stage >= 1 ? "scale(1)" : "scale(0.5)",
+          transition: "all 0.6s ease",
+        }}
+      >
+        <Logo size={60} />
+      </div>
+
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: 16,
+          opacity: stage >= 2 ? 1 : 0,
+          transform: stage >= 2 ? "translateY(0)" : "translateY(10px)",
+          transition: "all 0.5s ease",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 22,
+            fontWeight: 900,
+            letterSpacing: -1,
+            color: "#fff",
+            margin: "0 0 4px",
+          }}
+        >
+          Way<span style={{ color: "#00C896" }}>vo</span>
+        </p>
+        <p
+          style={{
+            fontSize: 11,
+            color: "rgba(255,255,255,.4)",
+            margin: 0,
+          }}
+        >
+          Morocco's premium AI travel companion
+        </p>
+      </div>
+    </div>
   );
 }

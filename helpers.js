@@ -1,220 +1,393 @@
-/* ============================================
-   WAYVO ANIMATIONS & KEYFRAMES
-   ============================================ */
+// ============================================
+// SUPPORT TAB - Help, emergency, price guide
+// ============================================
 
-/* Typing Indicator Animation */
-@keyframes typingPulse {
-  0%, 100% {
-    opacity: 0.2;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
+import React from "react";
+import Pill from "../ui/Pill";
+import { EMERGENCY_NUMBERS } from "../../data/items";
 
-/* Splash Screen Logo Animation */
-@keyframes logoScale {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
+export default function SupportTab({
+  onStartChat,
+  onGoToAgents,
+  onGoToEmergency,
+}) {
+  return (
+    <div style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
+      {/* Header */}
+      <div
+        style={{
+          background: "var(--gradient-primary)",
+          padding: "16px 14px 20px",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 18,
+            fontWeight: 800,
+            color: "#fff",
+            letterSpacing: -0.5,
+          }}
+        >
+          Support
+        </h1>
+        <p
+          style={{
+            margin: "3px 0 0",
+            fontSize: 10,
+            color: "rgba(255,255,255,.4)",
+          }}
+        >
+          AI · Human specialists · WhatsApp · Emergency
+        </p>
+      </div>
 
-/* Fade In */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+      <div style={{ padding: "13px" }}>
+        {/* AI Support */}
+        <button
+          onClick={() => onStartChat("ai")}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "var(--color-background-primary)",
+            border: "2px solid #00C896",
+            borderRadius: 13,
+            padding: "14px",
+            marginBottom: 10,
+            cursor: "pointer",
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "#00C896",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontSize: 22 }}>🤖</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: "0 0 1px",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--color-text-primary)",
+              }}
+            >
+              Wayvo AI
+            </p>
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontSize: 11,
+                color: "var(--color-text-secondary)",
+              }}
+            >
+              Instant · Your language · 24/7 · Fair price guide
+            </p>
+            <Pill text="● Always online" color="#00C896" small />
+          </div>
+          <span style={{ color: "#00C896", fontSize: 20 }}>›</span>
+        </button>
 
-/* Slide Up */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+        {/* Human Specialists */}
+        <button
+          onClick={onGoToAgents}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "var(--color-background-primary)",
+            border: "0.5px solid var(--color-border-tertiary)",
+            borderRadius: 13,
+            padding: "13px",
+            marginBottom: 10,
+            cursor: "pointer",
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "#7C3AED",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 22,
+              flexShrink: 0,
+            }}
+          >
+            👤
+          </div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: "0 0 1px",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--color-text-primary)",
+              }}
+            >
+              Human Specialists
+            </p>
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontSize: 11,
+                color: "var(--color-text-secondary)",
+              }}
+            >
+              Real experts · Chat · WhatsApp · Video call
+            </p>
+            <Pill text="● 3 online now" color="#22C55E" small />
+          </div>
+          <span style={{ color: "var(--color-text-tertiary)", fontSize: 20 }}>
+            ›
+          </span>
+        </button>
 
-/* Slide In Right */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+        {/* WhatsApp */}
+        <button
+          onClick={() => window.open("https://wa.me/212600000000", "_blank")}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "#F0FDF4",
+            border: "1px solid #BBF7D0",
+            borderRadius: 13,
+            padding: "13px",
+            marginBottom: 10,
+            cursor: "pointer",
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "#25D366",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 22,
+              flexShrink: 0,
+            }}
+          >
+            💬
+          </div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: "0 0 1px",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#166534",
+              }}
+            >
+              WhatsApp Support
+            </p>
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontSize: 11,
+                color: "#16A34A",
+              }}
+            >
+              Direct line to our specialists via WhatsApp
+            </p>
+            <Pill
+              text="Typical reply: 5 minutes"
+              color="#16A34A"
+              bg="#DCFCE7"
+              small
+            />
+          </div>
+          <span style={{ color: "#16A34A", fontSize: 20 }}>›</span>
+        </button>
 
-/* Pulse Glow */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(0, 200, 150, 0);
-  }
-}
+        {/* Emergency */}
+        <button
+          onClick={onGoToEmergency}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            background: "#FEF2F2",
+            border: "1px solid #FECACA",
+            borderRadius: 13,
+            padding: "13px",
+            marginBottom: 16,
+            cursor: "pointer",
+            textAlign: "left",
+            transition: "all 0.2s ease",
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "#FEE2E2",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 22,
+              flexShrink: 0,
+            }}
+          >
+            🆘
+          </div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: "0 0 1px",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#B91C1C",
+              }}
+            >
+              Emergency Help
+            </p>
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontSize: 11,
+                color: "#E53935",
+              }}
+            >
+              Guided steps · Embassy contacts · Works offline
+            </p>
+            <Pill
+              text="Police 190 · Ambulance 150"
+              color="#B91C1C"
+              bg="#FEE2E2"
+              small
+            />
+          </div>
+          <span style={{ color: "#E53935", fontSize: 20 }}>›</span>
+        </button>
 
-/* Shimmer Loading Effect */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
+        {/* Price Guide */}
+        <div
+          style={{
+            background: "var(--color-background-primary)",
+            border: "0.5px solid var(--color-border-tertiary)",
+            borderRadius: 12,
+            padding: "13px",
+            marginBottom: 12,
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--color-text-primary)",
+            }}
+          >
+            💰 Fair price guide — Marrakech
+          </p>
+          {[
+            ["Petit taxi — medina to Gueliz", "20–30 MAD"],
+            ["Grand taxi — Marrakech to Ourika", "50–70 MAD"],
+            ["Airport taxi to medina", "80–100 MAD"],
+            ["Lunch in a local restaurant", "40–80 MAD/person"],
+            ["Street food snack", "10–25 MAD"],
+            ["Hammam entry (local)", "10–20 MAD"],
+            ["Hammam (tourist, with massage)", "150–350 MAD"],
+            ["Water (0.5L bottle)", "3–5 MAD"],
+          ].map(([item, price]) => (
+            <div
+              key={item}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "5px 0",
+                borderBottom: "0.5px solid var(--color-border-tertiary)",
+              }}
+            >
+              <span
+                style={{ fontSize: 11, color: "var(--color-text-secondary)" }}
+              >
+                {item}
+              </span>
+              <span
+                style={{ fontSize: 11, fontWeight: 700, color: "#00C896" }}
+              >
+                {price}
+              </span>
+            </div>
+          ))}
+        </div>
 
-/* Bounce */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Spin */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Heart Beat */
-@keyframes heartBeat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.15);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.15);
-  }
-  70% {
-    transform: scale(1);
-  }
-}
-
-/* Toast Slide Up */
-@keyframes toastSlideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-/* Toast Fade Out */
-@keyframes toastFadeOut {
-  from {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-  to {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-}
-
-/* Skeleton Loading */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-background-secondary) 25%,
-    var(--color-border-primary) 50%,
-    var(--color-background-secondary) 75%
+        {/* FAQ */}
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "var(--color-text-secondary)",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
+          Common questions
+        </p>
+        {[
+          "Is Morocco safe for solo travellers?",
+          "What currency should I bring?",
+          "Do I need a visa for Morocco?",
+          "Best time to visit Morocco?",
+          "How to get around Morocco cheaply?",
+        ].map((q) => (
+          <button
+            key={q}
+            onClick={() => onStartChat("ai")}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "10px 13px",
+              background: "var(--color-background-primary)",
+              border: "0.5px solid var(--color-border-tertiary)",
+              borderRadius: 9,
+              marginBottom: 5,
+              fontSize: 12,
+              color: "var(--color-text-primary)",
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {q}
+            <span
+              style={{ color: "#00C896", flexShrink: 0, marginLeft: 7 }}
+            >
+              ›
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-md);
-}
-
-/* Animation Utility Classes */
-.animate-fade-in {
-  animation: fadeIn var(--transition-base);
-}
-
-.animate-slide-up {
-  animation: slideUp var(--transition-base);
-}
-
-.animate-slide-in-right {
-  animation: slideInRight var(--transition-base);
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 2s infinite;
-}
-
-.animate-bounce {
-  animation: bounce 1s infinite;
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-.animate-heart {
-  animation: heartBeat 1.2s;
-}
-
-/* Transition Utilities */
-.transition-all {
-  transition: all var(--transition-base);
-}
-
-.transition-transform {
-  transition: transform var(--transition-base);
-}
-
-.transition-opacity {
-  transition: opacity var(--transition-base);
-}
-
-.transition-colors {
-  transition: background-color var(--transition-fast),
-              border-color var(--transition-fast),
-              color var(--transition-fast);
-}
-
-/* Hover Lift Effect */
-.hover-lift {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Press Down Effect */
-.press-down:active {
-  transform: scale(0.98);
 }

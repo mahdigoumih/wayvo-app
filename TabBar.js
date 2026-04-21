@@ -1,179 +1,321 @@
-/* ============================================
-   WAYVO DESIGN SYSTEM - CSS Custom Properties
-   ============================================ */
+// ============================================
+// WAYVO APP - Main Application
+// ============================================
 
-:root {
-  /* Brand Colors */
-  --color-navy: #0D1B2A;
-  --color-mid: #1B3A4B;
-  --color-green: #00C896;
-  --color-green-dark: #009E78;
-  --color-gold: #F5A623;
-  --color-red: #E53935;
-  --color-purple: #7C3AED;
-  --color-blue: #1D4ED8;
-  --color-teal: #0D9488;
-  --color-pink: #DB2777;
-  --color-coral: #EA580C;
+import React, { useState, useCallback, useEffect } from "react";
+import "./styles/variables.css";
+import "./styles/animations.css";
 
-  /* Backgrounds */
-  --color-background-primary: #0D1B2A;
-  --color-background-secondary: #1B3A4B;
-  --color-background-tertiary: #0D2E1F;
-  --color-background-info: rgba(0, 200, 150, 0.08);
-  --color-background-success: #F0FDF4;
-  --color-background-warning: #FEF3C7;
-  --color-background-error: #FEF2F2;
+// Components
+import SplashScreen from "./components/SplashScreen";
+import TabBar from "./components/TabBar";
+import Toast from "./components/ui/Toast";
 
-  /* Text */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.6);
-  --color-text-tertiary: rgba(255, 255, 255, 0.4);
-  --color-text-info: #00C896;
-  --color-text-success: #166534;
-  --color-text-warning: #92400E;
-  --color-text-error: #B91C1C;
+// Screens
+import HomeTab from "./components/home/HomeTab";
+import SearchTab from "./components/search/SearchTab";
+import PlanTab from "./components/plan/PlanTab";
+import SupportTab from "./components/support/SupportTab";
+import ProfileTab from "./components/profile/ProfileTab";
+import ChatScreen from "./components/chat/ChatScreen";
+import AgentsScreen from "./components/chat/AgentsScreen";
+import EmergencyScreen from "./components/support/EmergencyScreen";
+import WishlistScreen from "./components/wishlist/WishlistScreen";
+import PackagesScreen from "./components/packages/PackagesScreen";
+import PartnerPortal from "./components/partner/PartnerPortal";
+import BookingFlow from "./components/booking/BookingFlow";
+import OnboardingScreen from "./components/onboarding/OnboardingScreen";
 
-  /* Borders */
-  --color-border-primary: rgba(255, 255, 255, 0.15);
-  --color-border-secondary: rgba(255, 255, 255, 0.1);
-  --color-border-tertiary: rgba(255, 255, 255, 0.08);
-  --color-border-success: #BBF7D0;
-  --color-border-warning: #FCD34D;
-  --color-border-error: #FECACA;
+// Hooks & Utils
+import { useWishlistStorage, useUserStorage } from "./hooks/useLocalStorage";
+import { ITEMS, AGENTS } from "./data/items";
+import { APP_PHASES } from "./utils/constants";
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(145deg, #0D1B2A, #1B3A4B 60%, #0D2E1F 100%);
-  --gradient-gold: linear-gradient(135deg, #854F0B18, #F5A62318);
+export default function App() {
+  // App phase
+  const [phase, setPhase] = useState(APP_PHASES.SPLASH);
 
-  /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  // User & Wishlist (persisted to localStorage)
+  const { user, updateUser, addPoints } = useUserStorage();
+  const { wished, toggleWish, isWished, clearWishlist, count: wishlistCount } = useWishlistStorage();
 
-  /* Spacing Scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
+  // Navigation state
+  const [tab, setTab] = useState("home");
+  const [subScreen, setSubScreen] = useState(null); // chat, agents, emergency, wishlist, packages, partner, booking
+  const [chatMode, setChatMode] = useState("ai");
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  /* Border Radius */
-  --radius-sm: 7px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 14px;
-  --radius-2xl: 16px;
-  --radius-full: 9999px;
+  // UI state
+  const [toast, setToast] = useState("");
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  // Derived values
+  const wishlistValue = ITEMS.filter((i) => wished.has(i.id)).reduce(
+    (s, i) => s + i.price,
+    0
+  );
 
-  /* Z-Index Scale */
-  --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-modal-backdrop: 400;
-  --z-modal: 500;
-  --z-popover: 600;
-  --z-toast: 700;
-  --z-tooltip: 800;
+  // Splash completion
+  const handleSplashComplete = useCallback(() => {
+    // Check if user has completed onboarding
+    const onboarded = localStorage.getItem("wv3_onboarded");
+    setPhase(onboarded ? APP_PHASES.APP : APP_PHASES.ONBOARDING);
+  }, []);
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  --transition-slow: 350ms ease;
-  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  // Onboarding completion
+  const handleOnboardingComplete = useCallback(
+    (userData) => {
+      updateUser(userData);
+      localStorage.setItem("wv3_onboarded", "true");
+      setPhase(APP_PHASES.APP);
+      setToast(`Welcome ${userData.name}! 🎉 +50 Wayvo Points earned`);
+    },
+    [updateUser]
+  );
 
-  /* Layout */
-  --max-width-mobile: 430px;
-  --header-height: 56px;
-  --tab-bar-height: 64px;
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-}
+  // Navigation helpers
+  const goToTab = useCallback((t) => {
+    setTab(t);
+    setSubScreen(null);
+  }, []);
 
-/* ============================================
-   GLOBAL RESET & BASE STYLES
-   ============================================ */
+  const goToSubScreen = useCallback((screen) => {
+    setSubScreen(screen);
+  }, []);
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+  const goBack = useCallback(() => {
+    setSubScreen(null);
+    setSelectedAgent(null);
+    setSelectedItem(null);
+  }, []);
 
-html {
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
+  // Wishlist
+  const handleToggleWish = useCallback(
+    (id) => {
+      toggleWish(id);
+      const item = ITEMS.find((i) => i.id === id);
+      if (item) {
+        const isAdding = !wished.has(id);
+        setToast(
+          isAdding
+            ? `❤️ ${item.title} saved`
+            : `Removed from wishlist`
+        );
+      }
+    },
+    [toggleWish, wished]
+  );
 
-body {
-  font-family: var(--font-sans);
-  background: var(--color-background-tertiary);
-  color: var(--color-text-primary);
-  line-height: 1.5;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+  // Chat
+  const handleStartChat = useCallback(
+    (mode, agent = null) => {
+      setChatMode(mode);
+      setSelectedAgent(agent);
+      setSubScreen("chat");
+    },
+    []
+  );
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+  const handleSwitchChatMode = useCallback((mode) => {
+    setChatMode(mode);
+    setSelectedAgent(null);
+  }, []);
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
+  // Booking
+  const handleOpenItem = useCallback((item) => {
+    setSelectedItem(item);
+    setSubScreen("booking");
+  }, []);
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  // Toast
+  const showToast = useCallback((msg) => {
+    setToast(msg);
+  }, []);
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-primary);
-  border-radius: var(--radius-full);
-}
+  // Restart onboarding
+  const handleRestartOnboarding = useCallback(() => {
+    localStorage.removeItem("wv3_onboarded");
+    setPhase(APP_PHASES.ONBOARDING);
+  }, []);
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-tertiary);
-}
+  // Render main content based on current screen
+  const renderContent = () => {
+    if (subScreen === "chat") {
+      return (
+        <ChatScreen
+          mode={chatMode}
+          agent={selectedAgent}
+          user={user}
+          onBack={goBack}
+          onSwitchMode={handleSwitchChatMode}
+          onGoToAgents={() => setSubScreen("agents")}
+        />
+      );
+    }
 
-/* Selection */
-::selection {
-  background: var(--color-green);
-  color: var(--color-navy);
-}
+    if (subScreen === "agents") {
+      return (
+        <AgentsScreen
+          onBack={goBack}
+          onStartChat={handleStartChat}
+        />
+      );
+    }
 
-/* Focus Styles for Accessibility */
-:focus-visible {
-  outline: 2px solid var(--color-green);
-  outline-offset: 2px;
-}
+    if (subScreen === "emergency") {
+      return (
+        <EmergencyScreen
+          onBack={goBack}
+          onStartChat={handleStartChat}
+        />
+      );
+    }
 
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    if (subScreen === "wishlist") {
+      return (
+        <WishlistScreen
+          wished={wished}
+          wishlistCount={wishlistCount}
+          wishlistValue={wishlistValue}
+          userPoints={user.points}
+          onToggleWish={handleToggleWish}
+          onOpenItem={handleOpenItem}
+          onGoToSearch={() => {
+            setTab("search");
+            setSubScreen(null);
+          }}
+          onBack={goBack}
+        />
+      );
+    }
+
+    if (subScreen === "packages") {
+      return (
+        <PackagesScreen
+          onBack={goBack}
+          onStartChat={handleStartChat}
+          onGoToAgents={() => setSubScreen("agents")}
+        />
+      );
+    }
+
+    if (subScreen === "partner") {
+      return <PartnerPortal onBack={goBack} />;
+    }
+
+    if (subScreen === "booking" && selectedItem) {
+      return (
+        <BookingFlow
+          item={selectedItem}
+          user={user}
+          onBack={goBack}
+          onComplete={() => {
+            addPoints(Math.round(selectedItem.price * 0.1));
+            setToast("Booking confirmed! 🎉");
+            goBack();
+          }}
+          onStartChat={handleStartChat}
+        />
+      );
+    }
+
+    // Main tabs
+    switch (tab) {
+      case "home":
+        return (
+          <HomeTab
+            user={user}
+            wished={wished}
+            wishlistCount={wishlistCount}
+            wishlistValue={wishlistValue}
+            onToggleWish={handleToggleWish}
+            onOpenItem={handleOpenItem}
+            onStartChat={handleStartChat}
+            onGoToSearch={() => goToTab("search")}
+            onGoToWishlist={() => setSubScreen("wishlist")}
+            onGoToAgents={() => setSubScreen("agents")}
+          />
+        );
+      case "search":
+        return (
+          <SearchTab
+            wished={wished}
+            onToggleWish={handleToggleWish}
+            onOpenItem={handleOpenItem}
+          />
+        );
+      case "plan":
+        return (
+          <PlanTab
+            user={user}
+            wished={wished}
+            onToggleWish={handleToggleWish}
+            onOpenItem={handleOpenItem}
+            onGoToPackages={() => setSubScreen("packages")}
+            onStartChat={handleStartChat}
+            onGoToAgents={() => setSubScreen("agents")}
+            onShowToast={showToast}
+          />
+        );
+      case "support":
+        return (
+          <SupportTab
+            onStartChat={handleStartChat}
+            onGoToAgents={() => setSubScreen("agents")}
+            onGoToEmergency={() => setSubScreen("emergency")}
+          />
+        );
+      case "profile":
+        return (
+          <ProfileTab
+            user={user}
+            wished={wished}
+            wishlistCount={wishlistCount}
+            wishlistValue={wishlistValue}
+            onGoToWishlist={() => setSubScreen("wishlist")}
+            onRestartOnboarding={handleRestartOnboarding}
+            onGoToPartner={() => setSubScreen("partner")}
+            onShowToast={showToast}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Splash screen
+  if (phase === APP_PHASES.SPLASH) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
   }
-}
 
-/* Print Styles */
-@media print {
-  body {
-    background: white;
-    color: black;
+  // Onboarding
+  if (phase === APP_PHASES.ONBOARDING) {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
   }
+
+  // Main app
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--color-background-tertiary)",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "var(--font-sans)",
+        maxWidth: 430,
+        margin: "0 auto",
+        width: "100%",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {renderContent()}
+
+      {/* Tab Bar - only show on main tabs */}
+      {!subScreen && <TabBar activeTab={tab} onTabChange={goToTab} onStartChat={handleStartChat} />}
+
+      {/* Toast */}
+      <Toast message={toast} onClose={() => setToast("")} />
+    </div>
+  );
 }

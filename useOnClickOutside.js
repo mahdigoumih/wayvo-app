@@ -1,28 +1,34 @@
 // ============================================
-// WAYVO LOGO COMPONENT
+// TYPING INDICATOR COMPONENT
 // ============================================
 
 import React from "react";
 
-export default function Logo({ size = 30, light = false }) {
+export default function TypingIndicator({ color = "#00C896" }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 40 40"
-      aria-label="Wayvo logo"
-      role="img"
+    <div
+      style={{
+        display: "flex",
+        gap: 4,
+        padding: "9px 13px",
+        background: "var(--color-background-primary)",
+        borderRadius: "15px 15px 15px 4px",
+        border: "0.5px solid var(--color-border-tertiary)",
+      }}
     >
-      <rect width="40" height="40" rx="11" fill="#00C896" />
-      <path
-        d="M8 15L14 26L20 17L26 26L32 15"
-        stroke="#fff"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <circle cx="32" cy="15" r="3" fill="#fff" />
-    </svg>
+      {[0, 0.2, 0.4].map((delay, i) => (
+        <span
+          key={i}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: color,
+            display: "inline-block",
+            animation: `typingPulse 0.9s ${delay}s infinite`,
+          }}
+        />
+      ))}
+    </div>
   );
 }

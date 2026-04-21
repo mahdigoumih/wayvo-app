@@ -1,414 +1,601 @@
 // ============================================
-// CHAT SCREEN COMPONENT
-// AI and human specialist chat interface
+// ONBOARDING SCREEN
+// Multi-step user onboarding flow
 // ============================================
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import Logo from "../ui/Logo";
-import TypingIndicator from "../ui/TypingIndicator";
-import { formatMarkdown } from "../../utils/helpers";
-import { API_CONFIG } from "../../utils/constants";
-import { useScrollToBottom } from "../../hooks/useScrollToBottom";
+import { INTERESTS, BUDGETS, CITIES, NATIONALITIES } from "../../data/items";
+import { POINTS } from "../../utils/constants";
 
-export default function ChatScreen({
-  mode,
-  agent,
-  user,
-  onBack,
-  onSwitchMode,
-  onGoToAgents,
-}) {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const endRef = useScrollToBottom([messages, busy]);
+export default function OnboardingScreen({ onComplete }) {
+  const [step, setStep] = useState(1);
+  const [user, setUser] = useState({
+    name: "",
+    nat: "",
+    interests: [],
+    city: "Marrakech",
+    budget: "",
+  });
 
-  // Initialize greeting
-  useEffect(() => {
-    const greeting =
-      mode === "agent" && agent
-        ? `Hello! I'm **${agent.name}** 😊\n\nI specialise in **${agent.spec}** and I've helped over ${agent.handled.toLocaleString()} travellers explore Morocco in ${agent.exp}.\n\n${
-            user.name ? "Great to meet you, " + user.name + "! " : ""
-          }You're in **${user.city || "Morocco"}**. What kind of experience are you dreaming of?`
-        : `Marhba${
-            user.name ? " " + user.name : ""
-          }! 👋 I'm **Wayvo AI** — your Morocco travel intelligence.\n\nYou're in **${
-            user.city || "Morocco"
-          }**${
-            user.interests.length
-              ? `, and I know you love ${user.interests
-                  .slice(0, 2)
-                  .join(" and ")}`
-              : ""
-          }. Ask me anything — I'll reply in your language. 🇲🇦`;
+  const toggleInterest = (id) => {
+    setUser((prev) => ({
+      ...prev,
+      interests: prev.interests.includes(id)
+        ? prev.interests.filter((x) => x !== id)
+        : [...prev.interests, id],
+    }));
+  };
 
-    setMessages([{ role: "assistant", content: greeting }]);
-  }, [mode, agent, user]);
-
-  const sendMessage = useCallback(
-    async (text) => {
-      const messageText = (text || input).trim();
-      if (!messageText || busy) return;
-
-      const userMessage = { role: "user", content: messageText };
-      const newMessages = [...messages, userMessage];
-      setMessages(newMessages);
-      setInput("");
-      setBusy(true);
-
-      // Build system prompt
-      const systemPrompt =
-        mode === "agent" && agent
-          ? `You are ${agent.name}, Wayvo senior travel specialist (${agent.spec}, ${agent.exp} experience). ${agent.bio} Tourist: ${
-              user.name || "traveller"
-            } from ${user.nat || "unknown"}, interests: ${
-              user.interests.join(",") || "general"
-            }, city: ${user.city}, budget: ${
-              user.budget || "flexible"
-            }. Auto-detect and respond in their language (EN/FR/AR/ES/IT/DE). Be warm, professional, expert. Suggest specific Wayvo experiences. End messages with: "${agent.name} · Wayvo Specialist"`
-          : `You are Wayvo AI — Morocco's most intelligent travel companion. Tourist: ${
-              user.name || "traveller"
-            } from ${user.nat || "unknown"}, interests: ${
-              user.interests.join(",") || "travel"
-            }, city: ${user.city || "Morocco"}, budget: ${
-              user.budget || "flexible"
-            }. Auto-detect and respond in their language (EN/FR/AR/ES/IT/DE). Be warm, concise (max 3 paragraphs), practical. Give specific, hyperlocal Morocco recommendations. Emergency: Police 190, Ambulance 150, Tourist Police 177. Fair taxi prices: Marrakech medina → Gueliz = 20–30 MAD.`;
-
-      try {
-        const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
-        if (!apiKey) {
-          throw new Error("API key not configured");
-        }
-
-        const response = await fetch(API_CONFIG.ANTHROPIC_BASE_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey,
-            "anthropic-version": API_CONFIG.ANTHROPIC_VERSION,
-          },
-          body: JSON.stringify({
-            model: API_CONFIG.MODEL,
-            max_tokens: API_CONFIG.MAX_TOKENS,
-            system: systemPrompt,
-            messages: newMessages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const reply =
-          data.content?.[0]?.text || "Sorry, I didn't catch that. Try again?";
-
-        setMessages([...newMessages, { role: "assistant", content: reply }]);
-      } catch (error) {
-        console.error("Chat error:", error);
-        setMessages([
-          ...newMessages,
-          {
-            role: "assistant",
-            content:
-              "⚡ Connection issue. Please check your API key configuration and try again.",
-          },
-        ]);
-      } finally {
-        setBusy(false);
-      }
-    },
-    [input, busy, messages, mode, agent, user]
-  );
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const canProceed = () => {
+    switch (step) {
+      case 1:
+        return user.name.trim().length > 0;
+      case 2:
+        return user.interests.length > 0;
+      case 3:
+        return user.budget !== "";
+      case 4:
+        return true;
+      default:
+        return false;
     }
+  };
+
+  const handleComplete = () => {
+    onComplete({ ...user, points: POINTS.SIGNUP_BONUS });
   };
 
   return (
     <div
       style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        minHeight: 0,
+        minHeight: "100vh",
+        background: "var(--color-background-tertiary)",
+        fontFamily: "var(--font-sans)",
       }}
     >
-      {/* Chat Header */}
+      {/* Progress Header */}
       <div
         style={{
-          background: "var(--gradient-primary)",
-          padding: "9px 13px",
+          padding: "14px 18px 0",
           display: "flex",
           alignItems: "center",
           gap: 8,
-          flexShrink: 0,
+          marginBottom: 6,
         }}
       >
-        <button
-          onClick={onBack}
-          aria-label="Go back"
+        {step > 1 && (
+          <button
+            onClick={() => setStep((s) => s - 1)}
+            aria-label="Go back"
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 17,
+              cursor: "pointer",
+              color: "var(--color-text-secondary)",
+              padding: 0,
+            }}
+          >
+            ←
+          </button>
+        )}
+        <div
           style={{
-            background: "none",
-            border: "none",
-            color: "rgba(255,255,255,.7)",
-            fontSize: 18,
-            cursor: "pointer",
-            padding: 0,
-            lineHeight: 1,
+            flex: 1,
+            height: 4,
+            background: "var(--color-background-secondary)",
+            borderRadius: 4,
+            overflow: "hidden",
           }}
         >
-          ←
-        </button>
-
-        {mode === "agent" && agent ? (
           <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: agent.col,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#fff",
-              flexShrink: 0,
+              height: "100%",
+              width: `${(step / 4) * 100}%`,
+              background: "#00C896",
+              borderRadius: 4,
+              transition: "width 0.4s ease",
             }}
-          >
-            {agent.img}
-          </div>
-        ) : (
-          <Logo size={30} />
-        )}
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#fff",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {mode === "agent" && agent ? agent.name : "Wayvo AI"}
-          </p>
-          <p style={{ margin: 0, fontSize: 10, color: "#00C896" }}>
-            {mode === "agent" && agent
-              ? `${agent.spec} · ${agent.lang.join("·")}`
-              : `AI · ${user.city || "Morocco"} · Auto language`}
-          </p>
+          />
         </div>
-
-        {mode === "ai" ? (
-          <button
-            onClick={onGoToAgents}
-            style={{
-              fontSize: 10,
-              padding: "4px 9px",
-              borderRadius: 17,
-              background: "#00C89628",
-              border: "1px solid #00C89645",
-              color: "#00C896",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            👤 Human
-          </button>
-        ) : (
-          <button
-            onClick={() => onSwitchMode("ai")}
-            style={{
-              fontSize: 10,
-              padding: "4px 9px",
-              borderRadius: 17,
-              background: "rgba(255,255,255,.1)",
-              border: "1px solid rgba(255,255,255,.2)",
-              color: "rgba(255,255,255,.6)",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🤖 AI
-          </button>
-        )}
+        <span
+          style={{
+            fontSize: 11,
+            color: "var(--color-text-tertiary)",
+            fontWeight: 600,
+          }}
+        >
+          {step}/4
+        </span>
       </div>
 
-      {/* Messages */}
+      {/* Step Content */}
+      <div style={{ padding: "18px 18px 40px" }}>
+        {step === 1 && (
+          <Step1Profile
+            user={user}
+            onUpdate={setUser}
+            onNext={() => setStep(2)}
+          />
+        )}
+        {step === 2 && (
+          <Step2Interests
+            user={user}
+            onToggle={toggleInterest}
+            onNext={() => setStep(3)}
+          />
+        )}
+        {step === 3 && (
+          <Step3Budget
+            user={user}
+            onUpdate={setUser}
+            onNext={() => setStep(4)}
+          />
+        )}
+        {step === 4 && (
+          <Step4City user={user} onUpdate={setUser} onComplete={handleComplete} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Step 1: Profile
+function Step1Profile({ user, onUpdate, onNext }) {
+  return (
+    <>
+      <Logo size={40} />
+      <h1
+        style={{
+          fontSize: 24,
+          fontWeight: 900,
+          letterSpacing: -1,
+          margin: "12px 0 4px",
+          color: "var(--color-text-primary)",
+        }}
+      >
+        Welcome to Wayvo 🇲🇦
+      </h1>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--color-text-secondary)",
+          margin: "0 0 20px",
+          lineHeight: 1.6,
+        }}
+      >
+        Morocco's premium AI travel companion. Personalised for you from the
+        first second.
+      </p>
+
+      <label
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          color: "var(--color-text-secondary)",
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          display: "block",
+          marginBottom: 6,
+        }}
+      >
+        Your first name
+      </label>
+      <input
+        value={user.name}
+        onChange={(e) => onUpdate({ ...user, name: e.target.value })}
+        placeholder="e.g. Sophie"
+        autoFocus
+        style={{
+          width: "100%",
+          padding: "13px 14px",
+          borderRadius: 11,
+          border: "1px solid var(--color-border-secondary)",
+          background: "var(--color-background-primary)",
+          fontSize: 14,
+          color: "var(--color-text-primary)",
+          outline: "none",
+          fontFamily: "var(--font-sans)",
+          marginBottom: 12,
+        }}
+      />
+
+      <label
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          color: "var(--color-text-secondary)",
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          display: "block",
+          marginBottom: 6,
+        }}
+      >
+        Nationality
+      </label>
+      <select
+        value={user.nat}
+        onChange={(e) => onUpdate({ ...user, nat: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "13px 14px",
+          borderRadius: 11,
+          border: "1px solid var(--color-border-secondary)",
+          background: "var(--color-background-primary)",
+          fontSize: 13,
+          color: user.nat
+            ? "var(--color-text-primary)"
+            : "var(--color-text-tertiary)",
+          outline: "none",
+          fontFamily: "var(--font-sans)",
+          marginBottom: 20,
+        }}
+      >
+        <option value="">Select your country</option>
+        {NATIONALITIES.map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={onNext}
+        disabled={!user.name.trim()}
+        style={{
+          width: "100%",
+          padding: "13px",
+          background: user.name.trim()
+            ? "#00C896"
+            : "var(--color-background-secondary)",
+          border: "none",
+          borderRadius: 12,
+          color: user.name.trim() ? "#fff" : "var(--color-text-tertiary)",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: user.name.trim() ? "pointer" : "not-allowed",
+          transition: "all 0.2s ease",
+        }}
+      >
+        Continue →
+      </button>
+
+      <button
+        onClick={onNext}
+        style={{
+          width: "100%",
+          padding: "10px",
+          background: "none",
+          border: "none",
+          color: "var(--color-text-tertiary)",
+          fontSize: 11,
+          cursor: "pointer",
+          marginTop: 5,
+        }}
+      >
+        Skip for now
+      </button>
+    </>
+  );
+}
+
+// Step 2: Interests
+function Step2Interests({ user, onToggle, onNext }) {
+  return (
+    <>
+      <h1
+        style={{
+          fontSize: 23,
+          fontWeight: 900,
+          letterSpacing: -1,
+          margin: "0 0 4px",
+          color: "var(--color-text-primary)",
+        }}
+      >
+        Your travel style{user.name ? `, ${user.name}` : ""}? ✈️
+      </h1>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--color-text-secondary)",
+          margin: "0 0 16px",
+        }}
+      >
+        Pick everything that applies — we use this to personalise everything
+      </p>
+
       <div
         style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "12px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          marginBottom: 20,
+        }}
+      >
+        {INTERESTS.map((it) => {
+          const selected = user.interests.includes(it.id);
+          return (
+            <button
+              key={it.id}
+              onClick={() => onToggle(it.id)}
+              style={{
+                padding: "13px 8px",
+                borderRadius: 12,
+                border: selected
+                  ? "2px solid #00C896"
+                  : "1px solid var(--color-border-tertiary)",
+                background: selected ? "#00C89614" : "var(--color-background-primary)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 4,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span style={{ fontSize: 20 }}>{it.icon}</span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: selected ? 700 : 400,
+                  color: selected ? "#009E78" : "var(--color-text-primary)",
+                }}
+              >
+                {it.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={onNext}
+        disabled={user.interests.length === 0}
+        style={{
+          width: "100%",
+          padding: "13px",
+          background: user.interests.length
+            ? "#00C896"
+            : "var(--color-background-secondary)",
+          border: "none",
+          borderRadius: 12,
+          color: user.interests.length ? "#fff" : "var(--color-text-tertiary)",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: user.interests.length ? "pointer" : "not-allowed",
+          transition: "all 0.2s ease",
+        }}
+      >
+        Continue ({user.interests.length} selected) →
+      </button>
+    </>
+  );
+}
+
+// Step 3: Budget
+function Step3Budget({ user, onUpdate, onNext }) {
+  return (
+    <>
+      <h1
+        style={{
+          fontSize: 23,
+          fontWeight: 900,
+          letterSpacing: -1,
+          margin: "0 0 4px",
+          color: "var(--color-text-primary)",
+        }}
+      >
+        Your trip budget? 💰
+      </h1>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--color-text-secondary)",
+          margin: "0 0 18px",
+        }}
+      >
+        Per person, not including flights
+      </p>
+
+      <div
+        style={{
           display: "flex",
           flexDirection: "column",
           gap: 8,
+          marginBottom: 22,
         }}
       >
-        {messages.map((msg, i) => (
-          <div
-            key={i}
+        {BUDGETS.map((b) => (
+          <button
+            key={b}
+            onClick={() => onUpdate({ ...user, budget: b })}
             style={{
+              padding: "13px 16px",
+              borderRadius: 12,
+              border:
+                user.budget === b
+                  ? "2px solid #00C896"
+                  : "1px solid var(--color-border-tertiary)",
+              background:
+                user.budget === b
+                  ? "#00C89614"
+                  : "var(--color-background-primary)",
               display: "flex",
-              alignItems: "flex-end",
-              gap: 7,
-              justifyContent:
-                msg.role === "user" ? "flex-end" : "flex-start",
+              justifyContent: "space-between",
+              alignItems: "center",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
             }}
           >
-            {msg.role === "assistant" &&
-              (mode === "agent" && agent ? (
-                <div
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    background: agent.col,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "#fff",
-                    flexShrink: 0,
-                  }}
-                >
-                  {agent.img}
-                </div>
-              ) : (
-                <Logo size={24} />
-              ))}
-
-            <div
+            <span
               style={{
-                maxWidth: "78%",
-                padding: "9px 12px",
-                borderRadius:
-                  msg.role === "user"
-                    ? "14px 14px 4px 14px"
-                    : "14px 14px 14px 4px",
-                background:
-                  msg.role === "user" ? "#0D1B2A" : "var(--color-background-primary)",
-                border:
-                  msg.role === "assistant"
-                    ? "0.5px solid var(--color-border-tertiary)"
-                    : "none",
-                color:
-                  msg.role === "user"
-                    ? "#fff"
-                    : "var(--color-text-primary)",
-                fontSize: 12,
-                lineHeight: 1.65,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
+                fontSize: 13,
+                fontWeight: user.budget === b ? 700 : 400,
+                color: "var(--color-text-primary)",
               }}
             >
-              {msg.role === "assistant"
-                ? formatMarkdown(msg.content)
-                : msg.content}
-            </div>
-          </div>
-        ))}
-
-        {busy && (
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 7 }}>
-            {mode === "agent" && agent ? (
-              <div
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  background: agent.col,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "#fff",
-                }}
-              >
-                {agent.img}
-              </div>
-            ) : (
-              <Logo size={24} />
+              {b}
+            </span>
+            {user.budget === b && (
+              <span style={{ color: "#00C896", fontSize: 14 }}>✓</span>
             )}
-            <TypingIndicator
-              color={mode === "agent" && agent ? agent.col : "#00C896"}
-            />
-          </div>
-        )}
-
-        <div ref={endRef} />
+          </button>
+        ))}
       </div>
 
-      {/* Input */}
-      <div
+      <button
+        onClick={onNext}
+        disabled={!user.budget}
         style={{
-          background: "var(--color-background-primary)",
-          borderTop: "0.5px solid var(--color-border-tertiary)",
-          padding: "8px 12px",
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexShrink: 0,
+          width: "100%",
+          padding: "13px",
+          background: user.budget
+            ? "#00C896"
+            : "var(--color-background-secondary)",
+          border: "none",
+          borderRadius: 12,
+          color: user.budget ? "#fff" : "var(--color-text-tertiary)",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: user.budget ? "pointer" : "not-allowed",
+          transition: "all 0.2s ease",
         }}
       >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask anything about Morocco…"
-          aria-label="Chat message"
+        Continue →
+      </button>
+    </>
+  );
+}
+
+// Step 4: City & Complete
+function Step4City({ user, onUpdate, onComplete }) {
+  return (
+    <>
+      <h1
+        style={{
+          fontSize: 23,
+          fontWeight: 900,
+          letterSpacing: -1,
+          margin: "0 0 4px",
+          color: "var(--color-text-primary)",
+        }}
+      >
+        First stop in Morocco? 📍
+      </h1>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--color-text-secondary)",
+          margin: "0 0 16px",
+        }}
+      >
+        Where does your adventure begin?
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 7,
+          marginBottom: 16,
+        }}
+      >
+        {CITIES.map((c) => (
+          <button
+            key={c}
+            onClick={() => onUpdate({ ...user, city: c })}
+            style={{
+              padding: "12px 9px",
+              borderRadius: 10,
+              border:
+                user.city === c
+                  ? "2px solid #00C896"
+                  : "1px solid var(--color-border-tertiary)",
+              background:
+                user.city === c
+                  ? "#00C89614"
+                  : "var(--color-background-primary)",
+              cursor: "pointer",
+              textAlign: "center",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12,
+                fontWeight: user.city === c ? 700 : 400,
+                color: "var(--color-text-primary)",
+              }}
+            >
+              {c}
+            </p>
+          </button>
+        ))}
+      </div>
+
+      {/* Profile Summary */}
+      <div
+        style={{
+          background: "var(--color-background-secondary)",
+          borderRadius: 11,
+          padding: "12px",
+          marginBottom: 18,
+        }}
+      >
+        <p
           style={{
-            flex: 1,
-            background: "var(--color-background-secondary)",
-            border: "0.5px solid var(--color-border-secondary)",
-            borderRadius: 21,
-            padding: "8px 13px",
-            fontSize: 12,
-            color: "var(--color-text-primary)",
-            outline: "none",
-            fontFamily: "var(--font-sans)",
-          }}
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={!input.trim() || busy}
-          aria-label="Send message"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: "50%",
-            background:
-              input.trim() && !busy
-                ? "#00C896"
-                : "var(--color-background-secondary)",
-            border: "none",
-            color:
-              input.trim() && !busy ? "#fff" : "var(--color-text-tertiary)",
-            fontSize: 14,
-            cursor: input.trim() && !busy ? "pointer" : "not-allowed",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "background 0.2s ease",
-            flexShrink: 0,
+            margin: "0 0 6px",
+            fontSize: 10,
+            fontWeight: 700,
+            color: "var(--color-text-secondary)",
+            textTransform: "uppercase",
+            letterSpacing: 1,
           }}
         >
-          ↑
-        </button>
+          Your profile
+        </p>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 12,
+            color: "var(--color-text-primary)",
+            lineHeight: 2,
+          }}
+        >
+          👤 <strong>{user.name}</strong>
+          {user.nat ? ` · ${user.nat}` : ""}
+          <br />
+          🎯{" "}
+          {user.interests
+            .slice(0, 5)
+            .map((id) => INTERESTS.find((x) => x.id === id)?.icon)
+            .join(" ")}
+          <br />
+          💰 Budget: <strong>{user.budget}</strong>
+          <br />
+          📍 <strong>{user.city}</strong>
+        </p>
       </div>
-    </div>
+
+      <button
+        onClick={onComplete}
+        style={{
+          width: "100%",
+          padding: "15px",
+          background: "#00C896",
+          border: "none",
+          borderRadius: 12,
+          color: "#fff",
+          fontSize: 15,
+          fontWeight: 800,
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+        }}
+      >
+        Let's explore Morocco! 🚀
+      </button>
+    </>
   );
 }

@@ -1,1 +1,3 @@
-/*    /index.html   200
+User-agent: *
+Allow: /
+Sitemap: https://wayvo.com/sitemap.xml
